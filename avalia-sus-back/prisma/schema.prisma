@@ -1,0 +1,61 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String @id @default(uuid())
+  name     String
+  cpf      String @unique
+  password String
+
+  sessionTokens SessionToken[]
+  evaluations   Evaluation[]
+}
+
+model SessionToken {
+  id      String  @id @default(uuid())
+  token   String
+  userId  String
+  isValid Boolean @default(true)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Address {
+  id           String     @id @default(uuid())
+  street       String
+  neighborhood String
+  city         String
+  state        String
+  hospital     Hospital[]
+}
+
+model Hospital {
+  id        String @id @default(uuid())
+  cnes      String
+  name      String
+  addressId String
+
+  address     Address      @relation(fields: [addressId], references: [id], onDelete: Cascade)
+  evaluations Evaluation[]
+}
+
+model Evaluation {
+  id         String   @id @default(uuid())
+  rate       Int
+  comment    String
+  userId     String
+  hospitalId String
+  date       DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hospital Hospital @relation(fields: [hospitalId], references: [id])
+}
